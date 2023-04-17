@@ -8,7 +8,7 @@ To get syntax highlighting in VSCode to work, you have to open this directory as
 
 To test solidity,
 
-```
+```bash
 forge install foundry-rs/forge-std
 cp node_modules/forge-std src/contracts/lib/forge-std
 cd src/contracts
@@ -22,7 +22,7 @@ Goerli Address of Deployment: 0xA555F9E05402F8240AC99A0d045081E19C0eB9B3
 
 To deploy contract to local forked mainnet or prod, edit Deploy.s.sol to point to your contracts. You should also edit the `.env` file from cloning `   .env.example` to include your own private key.
 
-```
+```bash
 # Set terminal to the folder with this README
 cd src/contracts
 
