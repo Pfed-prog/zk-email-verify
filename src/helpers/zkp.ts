@@ -8,10 +8,9 @@ export const loadURL = "https://zkemail-zkey-chunks.s3.amazonaws.com/";
 const compressed = true;
 // const loadURL = "/zkemail-zkey-chunks/";
 
-const zkeyExtension = ".gz"
-const zkeyExtensionRegEx = new RegExp(`\\b${zkeyExtension}$\\b`, 'i') // = /.gz$/i
+const zkeyExtension = ".gz";
+const zkeyExtensionRegEx = new RegExp(`\\b${zkeyExtension}$\\b`, "i"); // = /.gz$/i
 const zkeySuffix = ["b", "c", "d", "e", "f", "g", "h", "i", "j", "k"];
-
 
 // We can use this function to ensure the type stored in localforage is correct.
 async function storeArrayBuffer(keyname: string, buffer: ArrayBuffer) {
@@ -21,7 +20,10 @@ async function storeArrayBuffer(keyname: string, buffer: ArrayBuffer) {
 // GET the compressed file from the remote server, then store it with localforage
 // Note that it must be stored as an uncompressed ArrayBuffer
 // and named such that filename===`${name}.zkey${a}` in order for it to be found by snarkjs.
-export async function downloadFromFilename(filename: string, compressed = false) {
+export async function downloadFromFilename(
+  filename: string,
+  compressed = false
+) {
   const link = loadURL + filename;
   try {
     const zkeyResp = await fetch(link, {
@@ -42,25 +44,36 @@ export async function downloadFromFilename(filename: string, compressed = false)
     }
     console.log(`Storage of ${filename} successful!`);
   } catch (e) {
-    console.log(`Storage of ${filename} unsuccessful, make sure IndexedDB is enabled in your browser.`);
+    console.log(
+      `Storage of ${filename} unsuccessful, make sure IndexedDB is enabled in your browser.`
+    );
     console.log(e);
   }
 }
 
-export const downloadProofFiles = async function (filename: string, onFileDownloaded: () => void) {
+export const downloadProofFiles = async function (
+  filename: string,
+  onFileDownloaded: () => void
+) {
   const filePromises = [];
   for (const c of zkeySuffix) {
     const targzFilename = `${filename}.zkey${c}${zkeyExtension}`;
     const itemCompressed = await localforage.getItem(targzFilename);
     const item = await localforage.getItem(`${filename}.zkey${c}`);
     if (item) {
-      console.log(`${filename}.zkey${c}${item ? "" : zkeyExtension} already found in localstorage!`);
+      console.log(
+        `${filename}.zkey${c}${
+          item ? "" : zkeyExtension
+        } already found in localstorage!`
+      );
       onFileDownloaded();
       continue;
     }
     filePromises.push(
       // downloadFromFilename(targzFilename, true).then(
-      downloadFromFilename(targzFilename, compressed).then(() => onFileDownloaded())
+      downloadFromFilename(targzFilename, compressed).then(() =>
+        onFileDownloaded()
+      )
     );
   }
   console.log(filePromises);
@@ -76,7 +89,11 @@ export const uncompressProofFiles = async function (filename: string) {
     if (!itemCompressed) {
       console.error(`Error downloading file ${targzFilename}`);
     } else {
-      console.log(`${filename}.zkey${c}${item ? "" : zkeyExtension} already found in localstorage!`);
+      console.log(
+        `${filename}.zkey${c}${
+          item ? "" : zkeyExtension
+        } already found in localstorage!`
+      );
       continue;
     }
     filePromises.push(downloadFromFilename(targzFilename));
@@ -89,7 +106,13 @@ export async function generateProof(input: any, filename: string) {
   // TODO: figure out how to generate this s.t. it passes build
   console.log("generating proof for input");
   console.log(input);
-  const { proof, publicSignals } = await snarkjs.groth16.fullProve(input, `${loadURL}${filename}.wasm`, `${filename}.zkey`);
+  console.log(loadURL);
+  console.log(filename);
+  const { proof, publicSignals } = await snarkjs.groth16.fullProve(
+    input,
+    `${loadURL}${filename}.wasm`,
+    `${filename}.zkey`
+  );
   console.log(`Generated proof ${JSON.stringify(proof)}`);
 
   return {
@@ -102,7 +125,11 @@ export async function verifyProof(proof: any, publicSignals: any) {
   console.log("PROOF", proof);
   console.log("PUBLIC SIGNALS", publicSignals);
   console.log("VK", vkey);
-  const proofVerified = await snarkjs.groth16.verify(vkey, publicSignals, proof);
+  const proofVerified = await snarkjs.groth16.verify(
+    vkey,
+    publicSignals,
+    proof
+  );
   console.log("proofV", proofVerified);
 
   return proofVerified;
@@ -125,16 +152,24 @@ function bigIntToArray(n: number, k: number, x: bigint) {
 
 // taken from generation code in dizkus-circuits tests
 function pubkeyToXYArrays(pk: string) {
-  const XArr = bigIntToArray(64, 4, BigInt("0x" + pk.slice(4, 4 + 64))).map((el) => el.toString());
-  const YArr = bigIntToArray(64, 4, BigInt("0x" + pk.slice(68, 68 + 64))).map((el) => el.toString());
+  const XArr = bigIntToArray(64, 4, BigInt("0x" + pk.slice(4, 4 + 64))).map(
+    (el) => el.toString()
+  );
+  const YArr = bigIntToArray(64, 4, BigInt("0x" + pk.slice(68, 68 + 64))).map(
+    (el) => el.toString()
+  );
 
   return [XArr, YArr];
 }
 
 // taken from generation code in dizkus-circuits tests
 function sigToRSArrays(sig: string) {
-  const rArr = bigIntToArray(64, 4, BigInt("0x" + sig.slice(2, 2 + 64))).map((el) => el.toString());
-  const sArr = bigIntToArray(64, 4, BigInt("0x" + sig.slice(66, 66 + 64))).map((el) => el.toString());
+  const rArr = bigIntToArray(64, 4, BigInt("0x" + sig.slice(2, 2 + 64))).map(
+    (el) => el.toString()
+  );
+  const sArr = bigIntToArray(64, 4, BigInt("0x" + sig.slice(66, 66 + 64))).map(
+    (el) => el.toString()
+  );
 
   return [rArr, sArr];
 }
